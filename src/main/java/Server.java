@@ -1,45 +1,48 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.Scanner;
 
 public class Server {
 
-    public void go() {
+    public void start() {
+
+        ServerSocket serverSocket = null;
+        int port = 6666;
+        Socket clientSocket = null;
+        PrintWriter out = null;
+        BufferedReader in = null;
 
         try {
-            ServerSocket serverSock = new ServerSocket(6666);
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e1) {
+            System.out.println("Could not listen on port: " + port);
+        }
 
-            while (true) {
+        System.out.println("Waiting for connection...");
 
-                Socket sock = serverSock.accept();
-                InputStreamReader inputStreamReader = new InputStreamReader(sock.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        try {
+            clientSocket = serverSocket.accept();
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (Exception e2) {
+            e2.printStackTrace();
+        }
 
-                String whatever = bufferedReader.readLine();
-                System.out.println(whatever);
+        System.out.println("Connection successful. Waiting for input...");
 
-                PrintWriter writer = new PrintWriter(sock.getOutputStream());
+        String inputLine;
+        try {
+            while ((inputLine = in.readLine()) != null) {
+                System.out.println("Server: " + inputLine);
+                out.println(inputLine);
 
-                try {
-                    writer.println("bonjour");
-                    writer.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                if (inputLine.equals("Bye.")) {
+                    break;
                 }
-
             }
-
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-
 }
